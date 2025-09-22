@@ -8,11 +8,19 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"gopkg.in/yaml.v3"
+)
+
+// Version information (set during build)
+var (
+	Version   = "dev"
+	BuildTime = "unknown"
+	Commit    = "unknown"
 )
 
 // Config holds the conversion configuration
@@ -462,7 +470,19 @@ func main() {
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 	flag.BoolVar(&showHelp, "h", false, "Show help message")
 
+	var showVersion bool
+	flag.BoolVar(&showVersion, "version", false, "Show version information")
+	flag.BoolVar(&showVersion, "v", false, "Show version information")
+
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("labelstudio-to-yolo version %s\n", Version)
+		fmt.Printf("Built: %s\n", BuildTime)
+		fmt.Printf("Commit: %s\n", Commit)
+		fmt.Printf("Go version: %s\n", strings.TrimPrefix(runtime.Version(), "go"))
+		return
+	}
 
 	if showHelp {
 		fmt.Println("Label Studio to YOLO Converter")

@@ -14,19 +14,19 @@ BINARY_DARWIN=$(BINARY_NAME)_darwin
 
 # Build for current platform
 build:
-	$(GOBUILD) -o $(BINARY_NAME) -v .
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v .
 
 # Build for all platforms
 build-all: build-linux build-windows build-darwin
 
 build-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BINARY_UNIX) -v .
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_UNIX) -v .
 
 build-windows:
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(BINARY_WINDOWS) -v .
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_WINDOWS) -v .
 
 build-darwin:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BINARY_DARWIN) -v .
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_DARWIN) -v .
 
 # Test
 test:
@@ -57,12 +57,12 @@ deps:
 
 # Run with default parameters
 run:
-	$(GOBUILD) -o $(BINARY_NAME) -v .
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v .
 	./$(BINARY_NAME)
 
 # Run with custom parameters
 run-custom:
-	$(GOBUILD) -o $(BINARY_NAME) -v .
+	$(GOBUILD) $(LDFLAGS) -o $(BINARY_NAME) -v .
 	./$(BINARY_NAME) -source . -output ./yolo_dataset -train-split 0.8
 
 # Install dependencies and build
@@ -84,7 +84,10 @@ security:
 	govulncheck ./...
 
 # Create release builds with version info
-LDFLAGS=-ldflags "-X main.Version=$(shell git describe --tags --always --dirty) -X main.BuildTime=$(shell date -u '+%Y-%m-%d_%H:%M:%S')"
+VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
+COMMIT=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+LDFLAGS=-ldflags "-s -w -X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.Commit=$(COMMIT)"
 
 release: clean
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_UNIX) -v .
